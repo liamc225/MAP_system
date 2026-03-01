@@ -194,35 +194,6 @@ SALESFORCE_REFRESH_TOKEN=your_refresh_token
 
 **Example trigger pattern:** Create a scheduled Trigger.dev task that polls for new `Task` records where `Subject LIKE '%MAP%'` or `Description` mentions campaign commitments, then triggers `verify-map-evidence` for each. Alternatively, use Salesforce Platform Events or Outbound Messages to push updates to a webhook that triggers the task in real-time.
 
-### 5. Connect to HubSpot (read-only)
-
-**HubSpot Private App setup:**
-
-1. In HubSpot, go to **Settings > Integrations > Private Apps > Create a private app**
-2. Under Scopes, enable read-only access:
-   - `crm.objects.contacts.read`
-   - `crm.objects.deals.read`
-   - `sales-email-read` — access to logged emails
-   - `crm.objects.owners.read`
-3. Copy the access token
-
-**Recommended HubSpot objects to query:**
-
-| Object | Endpoint | Why |
-|--------|----------|-----|
-| Engagements (emails) | `GET /crm/v3/objects/emails` | Employer-originated emails — filter by `hs_email_direction = INCOMING` |
-| Engagements (notes) | `GET /crm/v3/objects/notes` | AE meeting notes and call summaries |
-| Engagements (meetings) | `GET /crm/v3/objects/meetings` | Meeting descriptions with commitment language |
-| Deals | `GET /crm/v3/objects/deals` | Stage changes and deal properties |
-
-**Environment variables for Trigger.dev:**
-
-```
-HUBSPOT_ACCESS_TOKEN=your_private_app_token
-```
-
-**Example trigger pattern:** Use a scheduled task that polls `GET /crm/v3/objects/emails?sort=-hs_timestamp&limit=20` for recent incoming emails on deals in the MAP stage. For each new email, extract the body and trigger `verify-map-evidence`. HubSpot also supports webhooks via workflow actions for real-time triggers.
-
 ## Output schema
 
 The `MAPVerification` schema returned by both paths:
