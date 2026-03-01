@@ -9,10 +9,11 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@trigger.dev/sdk": "^4.4.1",
-    "zod": "^3.24.0"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@trigger.dev/build": "^4.4.1",
+    "@vercel/node": "^5.6.9",
     "trigger.dev": "^4.0.0",
     "typescript": "^5.7.0"
   }

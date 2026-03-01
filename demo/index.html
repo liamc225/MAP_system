@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAP Verification System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Figtree:wght@300..900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F4F0;
+      --surface: #FFFFFF;
+      --surface-raised: #FAFAF8;
+      --border: #E2DFD8;
+      --border-light: #EDEAE4;
+
+      --text: #1C1917;
+      --text-2: #57534E;
+      --text-3: #A8A29E;
+
+      --green: #059669;
+      --green-soft: #D1FAE5;
+      --green-muted: #065F46;
+      --amber: #D97706;
+      --amber-soft: #FEF3C7;
+      --amber-muted: #92400E;
+      --red: #B91C1C;
+      --red-soft: #FEE2E2;
+      --red-muted: #7F1D1D;
+
+      --accent: #0F766E;
+      --accent-soft: #CCFBF1;
+
+      --font-display: "Fraunces", "Georgia", serif;
+      --font-body: "Figtree", "Segoe UI", sans-serif;
+
+      --radius: 10px;
+      --shadow: 0 1px 2px rgba(28,25,23,0.04), 0 2px 8px rgba(28,25,23,0.03);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    /* ─── Header ──────────────────────────────────── */
+    .header {
+      margin-bottom: 3rem;
+      animation: fadeUp 0.6s ease both;
+    }
+    .header-eyebrow {
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 500;
+      font-optical-sizing: auto;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+    .header-sub {
+      font-size: 1rem;
+      color: var(--text-2);
+      max-width: 560px;
+    }
+
+    /* ─── Section chrome ─────────────────────────── */
+    .section { margin-bottom: 3.5rem; }
+    .section-head {
+      margin-bottom: 1.25rem;
+      animation: fadeUp 0.6s ease both;
+      animation-delay: 0.05s;
+    }
+    .section-head h2 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .section-head p {
+      font-size: 0.88rem;
+      color: var(--text-3);
+    }
+
+    /* ─── Result cards (hardcoded) ────────────────── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 860px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.25rem 1rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      animation: fadeUp 0.5s ease both;
+      border-top: 3px solid var(--border);
+    }
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+
+    .card--count   { border-top-color: var(--green); }
+    .card--dnc     { border-top-color: var(--red); }
+    .card--cwc     { border-top-color: var(--amber); }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.75rem;
+    }
+    .card-account {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--text);
+    }
+
+    /* Type badges */
+    .tbadge {
+      flex-shrink: 0;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+    }
+    .tbadge--email { background: #DBEAFE; color: #1E40AF; }
+    .tbadge--meeting_notes { background: #EDE9FE; color: #5B21B6; }
+    .tbadge--slack_message { background: #FEF3C7; color: #92400E; }
+
+    /* Verdict */
+    .verdict {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.75rem;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+    }
+    .verdict--count { background: var(--green-soft); color: var(--green-muted); }
+    .verdict--dnc   { background: var(--red-soft); color: var(--red-muted); }
+    .verdict--cwc   { background: var(--amber-soft); color: var(--amber-muted); }
+
+    /* Scores */
+    .scores { margin-bottom: 0.9rem; }
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    .score-name {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text-3);
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .score-track {
+      flex: 1;
+      height: 4px;
+      background: var(--border-light);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .score-fill {
+      height: 100%;
+      border-radius: 2px;
+      width: 0;
+      animation: barGrow 0.8s ease forwards;
+    }
+    .card:nth-child(1) .score-fill { animation-delay: 0.5s; }
+    .card:nth-child(2) .score-fill { animation-delay: 0.6s; }
+    .card:nth-child(3) .score-fill { animation-delay: 0.7s; }
+
+    .score-fill--green { background: var(--green); }
+    .score-fill--amber { background: var(--amber); }
+    .score-fill--red   { background: var(--red); }
+
+    .score-val {
+      font-size: 0.72rem;
+      font-weight: 600;
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .score-val--green { color: var(--green); }
+    .score-val--amber { color: var(--amber); }
+    .score-val--red   { color: var(--red); }
+
+    @keyframes barGrow {
+      to { width: var(--w); }
+    }
+
+    /* Key facts */
+    .facts {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .fact {
+      font-size: 0.8rem;
+      color: var(--text-2);
+      display: flex;
+      gap: 0.4rem;
+    }
+    .fact-label {
+      font-weight: 600;
+      color: var(--text-3);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      min-width: 70px;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    /* Expandable sections */
+    .toggle {
+      border: none;
+      border-top: 1px solid transparent;
+      font-family: var(--font-body);
+    }
+    .toggle + .toggle { margin-top: 0; }
+    .toggle summary {
+      cursor: pointer;
+      list-style: none;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-3);
+      padding: 0.35rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.15s;
+      user-select: none;
+    }
+    .toggle summary::-webkit-details-marker { display: none; }
+    .toggle summary::before {
+      content: "";
+      width: 0; height: 0;
+      border-left: 4px solid var(--text-3);
+      border-top: 3px solid transparent;
+      border-bottom: 3px solid transparent;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle[open] summary::before {
+      transform: rotate(90deg);
+    }
+    .toggle summary:hover { color: var(--text-2); }
+    .toggle .signal-count {
+      color: var(--text-3);
+      font-weight: 400;
+    }
+
+    .toggle-body {
+      padding: 0.5rem 0 0.25rem;
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* Signals */
+    .sig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    @media (max-width: 860px) {
+      .sig-grid { grid-template-columns: 1fr; }
+    }
+    .sig-col h4 {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+    }
+    .sig-col--for h4  { color: var(--green); }
+    .sig-col--against h4 { color: var(--red); }
+    .sig-col ul { list-style: none; }
+    .sig-col li {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      line-height: 1.45;
+      padding: 0.15rem 0 0.15rem 0.75rem;
+      position: relative;
+    }
+    .sig-col li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+    }
+    .sig-col--for li::before    { background: var(--green); }
+    .sig-col--against li::before { background: var(--red); }
+
+    .reasoning-text {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      line-height: 1.55;
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--surface-raised);
+      border-radius: 6px;
+    }
+
+    .followups {
+      margin-top: 0.5rem;
+    }
+    .followups h4 {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .followups ul { list-style: none; }
+    .followups li {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      line-height: 1.45;
+      padding: 0.15rem 0 0.15rem 0.75rem;
+      position: relative;
+    }
+    .followups li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.55em;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* Source evidence */
+    .evidence-quote {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      line-height: 1.55;
+      border-left: 2px solid var(--border);
+      padding: 0.4rem 0 0.4rem 0.75rem;
+      font-style: italic;
+    }
+
+    /* ─── Divider ─────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0.5rem 0 3rem;
+    }
+
+    /* ─── Try It section ─────────────────────────── */
+    .try-section {
+      animation: fadeUp 0.5s ease both;
+      animation-delay: 0.35s;
+    }
+
+    .field { flex: 1; min-width: 200px; }
+    .field label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+      margin-bottom: 0.3rem;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: var(--font-body);
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15,118,110,0.08);
+    }
+    .field textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: var(--text-3);
+    }
+
+    /* Example evidence cards */
+    .examples-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-3);
+      margin-bottom: 0.6rem;
+    }
+    .examples {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 640px) {
+      .examples { grid-template-columns: 1fr; }
+    }
+    .ex-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+      position: relative;
+      transition: border-color 0.15s;
+    }
+    .ex-card:hover { border-color: var(--accent); }
+    .ex-card--strong { border-left: 3px solid var(--green); }
+    .ex-card--weak   { border-left: 3px solid var(--red); }
+    .ex-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+    .ex-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ex-card--strong .ex-label { color: var(--green-muted); }
+    .ex-card--weak .ex-label   { color: var(--red-muted); }
+    .ex-text {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .copy-btn {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: transparent;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.15rem 0.45rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Form */
+    .try-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .form-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .form-row .field { min-width: 180px; }
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 0.75rem;
+    }
+
+    /* Buttons */
+    .btn-verify {
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.5rem 1.25rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-verify:hover { background: #0D6B63; }
+    .btn-verify:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    .spinner--dark {
+      border-color: var(--border);
+      border-top-color: var(--text-2);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Poll status */
+    .poll-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-3);
+      margin-top: 0.75rem;
+    }
+
+    /* Errors */
+    .error-msg {
+      background: var(--red-soft);
+      color: var(--red);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+    }
+
+    /* Live result (in try-it) */
+    .live-result {
+      margin-top: 1.25rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 1.25rem;
+    }
+    .live-result .verdict { margin-bottom: 0.75rem; }
+    .lr-scores {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .lr-score-block {}
+    .lr-score-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-3);
+      margin-bottom: 0.25rem;
+    }
+    .lr-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .lr-bar-track {
+      flex: 1;
+      height: 5px;
+      background: var(--border-light);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .lr-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease;
+    }
+    .lr-bar-fill--green { background: var(--green); }
+    .lr-bar-fill--amber { background: var(--amber); }
+    .lr-bar-fill--red   { background: var(--red); }
+    .lr-val {
+      font-size: 0.75rem;
+      font-weight: 600;
+      min-width: 28px;
+      text-align: right;
+    }
+    .lr-val--green { color: var(--green); }
+    .lr-val--amber { color: var(--amber); }
+    .lr-val--red   { color: var(--red); }
+    .lr-qual {
+      font-size: 0.72rem;
+      color: var(--text-3);
+      margin-top: 0.15rem;
+    }
+
+    .lr-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+    .lr-fact {
+      background: var(--surface-raised);
+      padding: 0.4rem 0.6rem;
+      border-radius: 5px;
+    }
+    .lr-fact-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-3);
+    }
+    .lr-fact-value {
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    /* Access gate — page hidden until JS unlocks it */
+    .page { display: none; }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-eyebrow">Rula Revenue Intelligence</div>
+    <h1>MAP Verification System</h1>
+    <p class="header-sub">Two-axis scoring of employer commitment evidence. Separates source trustworthiness from commitment specificity to surface inflated MAPs before they reach the forecast.</p>
+  </header>
+
+  <!-- ─── Hardcoded Results ──────────────────────── -->
+  <section class="section">
+    <div class="section-head">
+      <h2>Evidence Analysis</h2>
+      <p>Three evidence samples spanning the scoring spectrum — from direct employer confirmation to AE-only Slack recap</p>
+    </div>
+
+    <div class="cards">
+
+      <!-- Card 1: Meridian ──────────────── -->
+      <article class="card card--count">
+        <div class="card-top">
+          <h3 class="card-account">Meridian Health Partners</h3>
+          <span class="tbadge tbadge--email">Email</span>
+        </div>
+        <span class="verdict verdict--count">Count</span>
+        <div class="scores">
+          <div class="score-row">
+            <span class="score-name">Evidence Quality</span>
+            <div class="score-track"><div class="score-fill score-fill--green" style="--w:95%"></div></div>
+            <span class="score-val score-val--green">0.95</span>
+          </div>
+          <div class="score-row">
+            <span class="score-name">Commitment</span>
+            <div class="score-track"><div class="score-fill score-fill--green" style="--w:92%"></div></div>
+            <span class="score-val score-val--green">0.92</span>
+          </div>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="fact-label">Committer</span> David Chen, VP Total Rewards</div>
+          <div class="fact"><span class="fact-label">Campaigns</span> Launch email, Benefits insert, Wellness toolkit</div>
+          <div class="fact"><span class="fact-label">Timeline</span> Q2&ndash;Q4 (3 quarters)</div>
+        </div>
+        <details class="toggle">
+          <summary>Analysis <span class="signal-count">6 for &middot; 4 against</span></summary>
+          <div class="toggle-body">
+            <div class="sig-grid">
+              <div class="sig-col sig-col--for">
+                <h4>Signals for</h4>
+                <ul>
+                  <li>Direct written confirmation from VP, Total Rewards via email</li>
+                  <li>Three specific campaign types named</li>
+                  <li>Three distinct quarters specified (Q2, Q3, Q4)</li>
+                  <li>Commitment language: "we'd like to plan for"</li>
+                  <li>Employer initiated next step (follow-up call)</li>
+                  <li>Internal alignment confirmed with benefits team</li>
+                </ul>
+              </div>
+              <div class="sig-col sig-col--against">
+                <h4>Signals against</h4>
+                <ul>
+                  <li>Language slightly softer than "we are committing to"</li>
+                  <li>No formal signed MAP document yet</li>
+                  <li>Calendar year not explicitly stated</li>
+                  <li>No mention of budget or approval gates</li>
+                </ul>
+              </div>
+            </div>
+            <div class="reasoning-text">This commitment meets the threshold to count toward quota. Evidence quality is strong: the communication is employer-originated, written, and comes directly from the VP of Total Rewards with no AE intermediation. Commitment strength is firm: three specific campaigns are named across three quarters, internal alignment has occurred, and the employer proactively proposed a next step.</div>
+            <div class="followups">
+              <h4>Follow-up actions</h4>
+              <ul>
+                <li>Schedule calendar-finalization call as proposed by David Chen</li>
+                <li>Produce written MAP document and obtain sign-off</li>
+                <li>Confirm calendar year for Q2&ndash;Q4</li>
+                <li>Identify and loop in the benefits team contacts</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+        <details class="toggle">
+          <summary>Source evidence</summary>
+          <div class="toggle-body">
+            <blockquote class="evidence-quote">Email from David Chen (VP, Total Rewards) to AE, February 14: "Thanks for the presentation yesterday. We're excited to move forward with Rula. I've spoken with our benefits team and we'd like to plan for a launch email in Q2, followed by a benefits insert for open enrollment in Q3, and a manager wellness toolkit in Q4. Let's set up a call next week to finalize the calendar."</blockquote>
+          </div>
+        </details>
+      </article>
+
+      <!-- Card 2: TrueNorth ─────────────── -->
+      <article class="card card--dnc">
+        <div class="card-top">
+          <h3 class="card-account">TrueNorth Financial Group</h3>
+          <span class="tbadge tbadge--meeting_notes">Meeting Notes</span>
+        </div>
+        <span class="verdict verdict--dnc">Do Not Count</span>
+        <div class="scores">
+          <div class="score-row">
+            <span class="score-name">Evidence Quality</span>
+            <div class="score-track"><div class="score-fill score-fill--red" style="--w:30%"></div></div>
+            <span class="score-val score-val--red">0.30</span>
+          </div>
+          <div class="score-row">
+            <span class="score-name">Commitment</span>
+            <div class="score-track"><div class="score-fill score-fill--red" style="--w:15%"></div></div>
+            <span class="score-val score-val--red">0.15</span>
+          </div>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="fact-label">Committer</span> James (title unknown)</div>
+          <div class="fact"><span class="fact-label">Campaigns</span> None specified</div>
+          <div class="fact"><span class="fact-label">Timeline</span> "Q3 at the earliest" (0 quarters)</div>
+        </div>
+        <details class="toggle">
+          <summary>Analysis <span class="signal-count">3 for &middot; 8 against</span></summary>
+          <div class="toggle-body">
+            <div class="sig-grid">
+              <div class="sig-col sig-col--for">
+                <h4>Signals for</h4>
+                <ul>
+                  <li>Employer contact expressed interest in incorporating Rula</li>
+                  <li>Rough timeline anchor ("Q3 at the earliest")</li>
+                  <li>Post-merger benefits consolidation provides plausible trigger</li>
+                </ul>
+              </div>
+              <div class="sig-col sig-col--against">
+                <h4>Signals against</h4>
+                <ul>
+                  <li>AE meeting notes only &mdash; no employer-originated communication</li>
+                  <li>No specific campaign types named</li>
+                  <li>"Q3 at the earliest" is a floor, not a commitment</li>
+                  <li>Needs buy-in from integration team first</li>
+                  <li>Exploratory language: "interested in exploring," "looking at"</li>
+                  <li>Zero quarters formally committed</li>
+                  <li>No employer-initiated next steps</li>
+                  <li>Committer title unknown &mdash; unclear decision authority</li>
+                </ul>
+              </div>
+            </div>
+            <div class="reasoning-text">Both evidence quality and commitment strength are weak. The sole evidence source is the AE's own meeting notes with no employer-originated written communication. The commitment language is entirely exploratory: no campaigns named, no quarters committed, timeline is conditional, and James explicitly requires internal buy-in. Counting this would inflate forecasts with a lead that hasn't cleared basic commitment thresholds.</div>
+            <div class="followups">
+              <h4>Follow-up actions</h4>
+              <ul>
+                <li>Obtain direct written communication from James confirming intent</li>
+                <li>Identify James's full name and title</li>
+                <li>Clarify integration team approval process and timeline</li>
+                <li>Re-engage after proposal delivery for written feedback</li>
+                <li>Set milestone: if no written confirmation by end of Q2, downgrade</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+        <details class="toggle">
+          <summary>Source evidence</summary>
+          <div class="toggle-body">
+            <blockquote class="evidence-quote">Excerpt from AE's meeting notes, February 10: "James mentioned they're interested in exploring Rula as part of their post-merger benefits consolidation. He wants to see a proposal for how Rula could be positioned in the new unified benefits package. No commitment to specific campaigns yet, but he said 'we're definitely looking at Q3 at the earliest.' He needs to get buy-in from the integration team first."</blockquote>
+          </div>
+        </details>
+      </article>
+
+      <!-- Card 3: Atlas ────────────────── -->
+      <article class="card card--dnc">
+        <div class="card-top">
+          <h3 class="card-account">Atlas Logistics Group</h3>
+          <span class="tbadge tbadge--slack_message">Slack</span>
+        </div>
+        <span class="verdict verdict--dnc">Do Not Count</span>
+        <div class="scores">
+          <div class="score-row">
+            <span class="score-name">Evidence Quality</span>
+            <div class="score-track"><div class="score-fill score-fill--red" style="--w:15%"></div></div>
+            <span class="score-val score-val--red">0.15</span>
+          </div>
+          <div class="score-row">
+            <span class="score-name">Commitment</span>
+            <div class="score-track"><div class="score-fill score-fill--red" style="--w:35%"></div></div>
+            <span class="score-val score-val--red">0.35</span>
+          </div>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="fact-label">Committer</span> Rachel (title unknown)</div>
+          <div class="fact"><span class="fact-label">Campaigns</span> Email blast, Posters (AE paraphrase)</div>
+          <div class="fact"><span class="fact-label">Timeline</span> March launch, full year (4 quarters claimed)</div>
+        </div>
+        <details class="toggle">
+          <summary>Analysis <span class="signal-count">4 for &middot; 9 against</span></summary>
+          <div class="toggle-body">
+            <div class="sig-grid">
+              <div class="sig-col sig-col--for">
+                <h4>Signals for</h4>
+                <ul>
+                  <li>Specific campaign types mentioned (email blast, posters)</li>
+                  <li>Specific launch month referenced (March)</li>
+                  <li>Multi-quarter scope implied (full year)</li>
+                  <li>Scale detail (11k employees) suggests real conversation</li>
+                </ul>
+              </div>
+              <div class="sig-col sig-col--against">
+                <h4>Signals against</h4>
+                <ul>
+                  <li>AE-to-manager Slack recap only &mdash; no employer communication</li>
+                  <li>No direct quote from Rachel; all AE paraphrase</li>
+                  <li>Rachel's title and authority level unknown</li>
+                  <li>"She's in" is AE's interpretation, not written commitment</li>
+                  <li>MAP doc not yet sent &mdash; nothing reviewed or signed</li>
+                  <li>No confirmation of budget authority or internal approval</li>
+                  <li>"Full year" undefined &mdash; could mean calendar, fiscal, or rolling</li>
+                  <li>No employer-initiated follow-up documented</li>
+                  <li>Entirely internal and unverified evidence</li>
+                </ul>
+              </div>
+            </div>
+            <div class="reasoning-text">This commitment cannot be counted toward quota. The sole evidence is an AE's internal Slack message summarizing a phone call &mdash; the weakest possible evidence type. There is no employer-originated communication, no direct quote from Rachel, and no MAP document has been shared or acknowledged. While the AE's recap includes some specificity (campaign types, March launch), all detail flows exclusively through the AE's interpretation of a verbal conversation.</div>
+            <div class="followups">
+              <h4>Follow-up actions</h4>
+              <ul>
+                <li>Send MAP document to Rachel and obtain written confirmation</li>
+                <li>Identify Rachel's full name, title, and decision authority</li>
+                <li>Request follow-up meeting with Rachel (and her manager/benefits team)</li>
+                <li>Obtain employer email explicitly naming campaigns and quarterly plan</li>
+                <li>Clarify "full year" definition and confirm four-quarter commitment</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+        <details class="toggle">
+          <summary>Source evidence</summary>
+          <div class="toggle-body">
+            <blockquote class="evidence-quote">Slack message from AE to their manager, February 12: "Just got off the phone with Rachel at Atlas. She's in. They want to do a big launch in March &mdash; email blast to all 11k employees plus posters at every distribution center. She said they'd commit to quarterly campaigns for the full year. Going to send the MAP doc tomorrow."</blockquote>
+          </div>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ─── Try It Yourself ────────────────────────── -->
+  <section class="section try-section">
+    <div class="section-head">
+      <h2>Try It Yourself</h2>
+      <p>Paste employer commitment evidence and see how the system scores it in real-time</p>
+    </div>
+
+    <!-- Example evidence -->
+    <div class="examples-label">Example evidence to try</div>
+    <div class="examples">
+      <div class="ex-card ex-card--strong">
+        <div class="ex-card-head">
+          <span class="ex-label">Strong evidence (employer email)</span>
+          <button class="copy-btn" data-example="strong">Copy</button>
+        </div>
+        <p class="ex-text">Email from Sarah Park (Dir. Benefits, Pinnacle Corp): "Following our meeting, I've gotten approval from our CHRO to move forward. We want to launch with an all-employee email in Q2, add a benefits portal page in Q3, and do manager training sessions in Q3&ndash;Q4. Can you send the MAP document so I can get it on our implementation calendar?"</p>
+      </div>
+      <div class="ex-card ex-card--weak">
+        <div class="ex-card-head">
+          <span class="ex-label">Weak evidence (AE internal note)</span>
+          <button class="copy-btn" data-example="weak">Copy</button>
+        </div>
+        <p class="ex-text">AE note after call with Beacon Industries, Feb 28: "Good conversation with someone from their HR team. They seemed interested in mental health benefits and asked us to send some materials. Might be a fit for later this year."</p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="try-form">
+      <div class="form-row">
+        <div class="field">
+          <label for="customAccount">Account name</label>
+          <input type="text" id="customAccount" placeholder="e.g. Pinnacle Corp">
+        </div>
+        <div class="field" style="max-width:200px">
+          <label for="customType">Evidence type</label>
+          <select id="customType">
+            <option value="email">Email</option>
+            <option value="meeting_notes">Meeting Notes</option>
+            <option value="slack_message">Slack Message</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0.75rem">
+        <label for="customContent">Evidence content</label>
+        <textarea id="customContent" placeholder="Paste raw evidence text here..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn-verify" id="customVerifyBtn">Verify Evidence</button>
+      </div>
+      <div id="customResult"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ─── Access gate ────────────────────────────────
+const ACCESS_KEY = new URLSearchParams(window.location.search).get("access");
+const DEMO_UNLOCKED = ACCESS_KEY === "rula-case-study-2026";
+
+if (DEMO_UNLOCKED) {
+  document.querySelector(".page").style.display = "";
+}
+
+// ─── Example evidence texts ──────────────────────
+const EXAMPLES = {
+  strong: {
+    account: "Pinnacle Corp",
+    evidence_type: "email",
+    content: `Email from Sarah Park (Director of Benefits, Pinnacle Corp) to AE, March 3:\n"Following our meeting last week, I've gotten approval from our CHRO to move forward. We want to launch with an all-employee email in Q2, add a benefits portal page in Q3, and do manager training sessions in Q3–Q4. Can you send over the MAP document so I can get it on our implementation calendar?"`,
+  },
+  weak: {
+    account: "Beacon Industries",
+    evidence_type: "meeting_notes",
+    content: `AE note after call with Beacon Industries, Feb 28:\n"Good conversation with someone from their HR team. They seemed interested in mental health benefits and asked us to send some materials. Might be a fit for later this year."`,
+  },
+};
+
+// ─── API ────────────────────────────────────────
+async function verifyEvidence(payload) {
+  const res = await fetch('/api/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...payload, access_key: ACCESS_KEY }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ─── Helpers ────────────────────────────────────
+function esc(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function scoreColorClass(v) {
+  if (v >= 0.8) return "green";
+  if (v >= 0.5) return "amber";
+  return "red";
+}
+
+// ─── Render live result ─────────────────────────
+function renderResult(r) {
+  const c = r.commitment;
+  const eqC = scoreColorClass(r.evidence_quality);
+  const csC = scoreColorClass(r.commitment_strength);
+  const vClass = r.quota_recommendation === "count" ? "count"
+    : r.quota_recommendation === "count_with_conditions" ? "cwc" : "dnc";
+  const vLabel = r.quota_recommendation === "count" ? "Count"
+    : r.quota_recommendation === "count_with_conditions" ? "Count with Conditions" : "Do Not Count";
+
+  return `<div class="live-result">
+    <span class="verdict verdict--${vClass}">${vLabel}</span>
+    <div class="lr-scores">
+      <div class="lr-score-block">
+        <div class="lr-score-label">Evidence Quality</div>
+        <div class="lr-bar-row">
+          <div class="lr-bar-track"><div class="lr-bar-fill lr-bar-fill--${eqC}" style="width:${r.evidence_quality*100}%"></div></div>
+          <span class="lr-val lr-val--${eqC}">${r.evidence_quality.toFixed(2)}</span>
+        </div>
+        <div class="lr-qual">${r.evidence_quality_label}</div>
+      </div>
+      <div class="lr-score-block">
+        <div class="lr-score-label">Commitment Strength</div>
+        <div class="lr-bar-row">
+          <div class="lr-bar-track"><div class="lr-bar-fill lr-bar-fill--${csC}" style="width:${r.commitment_strength*100}%"></div></div>
+          <span class="lr-val lr-val--${csC}">${r.commitment_strength.toFixed(2)}</span>
+        </div>
+        <div class="lr-qual">${r.commitment_strength_label}</div>
+      </div>
+    </div>
+    <div class="lr-facts">
+      ${c.committer_name ? `<div class="lr-fact"><div class="lr-fact-label">Committer</div><div class="lr-fact-value">${esc(c.committer_name)}${c.committer_title ? `, ${esc(c.committer_title)}` : ""}</div></div>` : ""}
+      ${c.campaigns.length ? `<div class="lr-fact"><div class="lr-fact-label">Campaigns</div><div class="lr-fact-value">${c.campaigns.map(esc).join(", ")}</div></div>` : ""}
+      ${c.timeline ? `<div class="lr-fact"><div class="lr-fact-label">Timeline</div><div class="lr-fact-value">${esc(c.timeline)}</div></div>` : ""}
+      <div class="lr-fact"><div class="lr-fact-label">Quarters</div><div class="lr-fact-value">${c.quarters_committed}</div></div>
+    </div>
+    <details class="toggle">
+      <summary>Analysis <span class="signal-count">${r.signals_for.length} for &middot; ${r.signals_against.length} against</span></summary>
+      <div class="toggle-body">
+        <div class="sig-grid">
+          <div class="sig-col sig-col--for"><h4>Signals for</h4><ul>${r.signals_for.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
+          <div class="sig-col sig-col--against"><h4>Signals against</h4><ul>${r.signals_against.length ? r.signals_against.map(s=>`<li>${esc(s)}</li>`).join("") : "<li>None identified</li>"}</ul></div>
+        </div>
+        <div class="reasoning-text">${esc(r.reasoning)}</div>
+        ${r.follow_up_actions.length ? `<div class="followups"><h4>Follow-up actions</h4><ul>${r.follow_up_actions.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>` : ""}
+      </div>
+    </details>
+  </div>`;
+}
+
+// ─── Verify flow ────────────────────────────────
+async function runVerify(payload, resultContainer, btn) {
+  resultContainer.innerHTML = "";
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Verifying&hellip;`;
+
+  try {
+    const output = await verifyEvidence(payload);
+    resultContainer.innerHTML = renderResult(output);
+  } catch (err) {
+    resultContainer.innerHTML = `<div class="error-msg">${esc(err.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
+  }
+}
+
+// ─── Copy buttons ───────────────────────────────
+document.querySelectorAll(".copy-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const key = btn.dataset.example;
+    const ex = EXAMPLES[key];
+    if (!ex) return;
+    document.getElementById("customAccount").value = ex.account;
+    document.getElementById("customType").value = ex.evidence_type;
+    document.getElementById("customContent").value = ex.content;
+    btn.textContent = "Copied!";
+    setTimeout(() => { btn.textContent = "Copy"; }, 1200);
+  });
+});
+
+// ─── Custom verify ──────────────────────────────
+document.getElementById("customVerifyBtn").addEventListener("click", () => {
+  const account = document.getElementById("customAccount").value.trim();
+  const evidence_type = document.getElementById("customType").value;
+  const content = document.getElementById("customContent").value.trim();
+
+  if (!account || !content) {
+    document.getElementById("customResult").innerHTML =
+      `<div class="error-msg">Account name and evidence content are required.</div>`;
+    return;
+  }
+
+  runVerify(
+    { account, evidence_type, content },
+    document.getElementById("customResult"),
+    document.getElementById("customVerifyBtn"),
+  );
+});
+</script>
+</body>
+</html>
