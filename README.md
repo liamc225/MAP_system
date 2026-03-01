@@ -2,8 +2,6 @@
 
 Two-axis scoring of employer commitment evidence for Rula's AE sales motion. Separates **source trustworthiness** (evidence quality) from **commitment specificity** (commitment strength) to surface inflated MAPs before they reach the forecast.
 
-> **[Live demo](https://map-verification-demo.vercel.app?access=rula-case-study-2026)** — paste evidence and see how the system scores it in real-time.
-
 ## How it works
 
 Unstructured evidence (emails, meeting notes, Slack messages) goes in. A structured verification assessment comes out — scored on two independent axes that determine a quota recommendation.
@@ -52,12 +50,18 @@ flowchart TD
     style L fill:#1a1a2e,stroke:#f59e0b,color:#e2e8f0
 ```
 
-Two runtime paths share the same core logic — Zod schemas, system prompt, and `messages.parse()` call:
+### Why Vercel now, Trigger.dev in production
 
-- **Vercel serverless function** (`api/verify.ts`) — powers the interactive demo. Single request/response, ~15s.
-- **Trigger.dev task** (`src/trigger/mapVerification.ts`) — queue-based path with retry/backoff for production CRM integration.
+The interactive demo runs on a **Vercel serverless function** (`api/verify.ts`) — a single request/response that returns in ~15 seconds. This is the right tool for a demo: zero infrastructure, instant deploys, no cold starts.
 
-Both call Claude's structured output API with `zodOutputFormat`, guaranteeing the response matches the `MAPVerification` schema. No freeform text parsing.
+The **Trigger.dev task** (`src/trigger/mapVerification.ts`) is the production path. It adds the things a real deployment needs:
+
+- **Retry with exponential backoff** — Anthropic rate limits or transient failures don't lose work. The task retries up to 3 times with randomized backoff (1–10s).
+- **Queue-based execution** — CRM events (new activity, updated opportunity) trigger verification asynchronously. No user waiting on a spinner.
+- **Long-running support** — `maxDuration: 120s` handles slow API responses without Vercel's 60s ceiling becoming a problem.
+- **Observability** — Every run is logged in the Trigger.dev dashboard with status, duration, input/output, and retry history. No need to dig through Vercel function logs.
+
+Both paths import the same `schemas.ts` and `prompt.ts` — the core logic is identical, only the execution wrapper differs.
 
 ## Project structure
 
@@ -84,8 +88,6 @@ Both call Claude's structured output API with `zodOutputFormat`, guaranteeing th
 
 **Shared core modules** — `schemas.ts` and `prompt.ts` are imported by both runtime paths. Update the schema or prompt once, both paths stay in sync.
 
-**Access-gated demo** — The interactive demo requires a URL parameter (`?access=rula-case-study-2026`). Validated on both client (page hidden) and server (403 on API). Prevents casual visitors from burning Anthropic credits.
-
 ## Setup
 
 ### Prerequisites
@@ -107,27 +109,119 @@ Create a `.env` file:
 ANTHROPIC_API_KEY=your_key_here
 ```
 
-### Run locally (Vercel dev)
+### Run the demo locally
 
 ```bash
 npx vercel dev
-# Open http://localhost:3000?access=rula-case-study-2026
+# Open http://localhost:3000
 ```
 
-### Run locally (Trigger.dev)
-
-```bash
-npm run dev
-# Use Trigger.dev dashboard to test the task
-```
-
-### Deploy
+### Deploy the demo
 
 ```bash
 vercel --prod --yes
 ```
 
 Set `ANTHROPIC_API_KEY` in Vercel environment variables.
+
+## Running on Trigger.dev
+
+The Trigger.dev path is designed for production use — triggered by CRM events rather than a browser form.
+
+### 1. Set up Trigger.dev
+
+Create a project at [trigger.dev](https://trigger.dev) and update the project ID in `trigger.config.ts`:
+
+```ts
+export default defineConfig({
+  project: "proj_your_project_id",
+  // ...
+});
+```
+
+Set `ANTHROPIC_API_KEY` in your Trigger.dev project's environment variables (Dashboard > Environment Variables).
+
+### 2. Deploy the task
+
+```bash
+npx trigger.dev@latest deploy
+```
+
+This deploys `src/trigger/mapVerification.ts` as the `verify-map-evidence` task with the retry policy defined in `trigger.config.ts`.
+
+### 3. Test from the dashboard
+
+Use the Trigger.dev dashboard to trigger a test run. Paste one of the evidence samples from `src/prompt.ts`:
+
+```json
+{
+  "account": "Meridian Health Partners",
+  "evidence_type": "email",
+  "content": "Email from David Chen (VP, Total Rewards) to AE, February 14: \"Thanks for the presentation yesterday. We're excited to move forward with Rula...\""
+}
+```
+
+### 4. Connect to Salesforce (read-only)
+
+To trigger verification from Salesforce activity data, create a new task that listens for CRM events and feeds evidence to `verify-map-evidence`.
+
+**Salesforce Connected App setup:**
+
+1. In Salesforce Setup, go to **App Manager > New Connected App**
+2. Enable OAuth, select these scopes (minimum for read-only):
+   - `api` — REST API access
+   - `refresh_token, offline_access` — long-lived token for background tasks
+3. Under **OAuth Policies**, set Permitted Users to "Admin approved users are pre-authorized"
+4. Assign the Connected App to a **read-only integration user** via a Permission Set — do not use an admin account
+
+**Recommended Salesforce objects to query:**
+
+| Object | Field | Why |
+|--------|-------|-----|
+| `Task` / `Event` | `Description`, `Subject` | AE meeting notes and call summaries |
+| `EmailMessage` | `TextBody`, `FromAddress` | Employer-originated emails (highest evidence quality) |
+| `Opportunity` | `StageName`, `NextStep` | Stage changes that suggest MAP commitment |
+| `ContentDocumentLink` | linked files | Attached MAP documents or screenshots |
+
+**Environment variables for Trigger.dev:**
+
+```
+SALESFORCE_INSTANCE_URL=https://yourorg.my.salesforce.com
+SALESFORCE_CLIENT_ID=your_connected_app_client_id
+SALESFORCE_CLIENT_SECRET=your_connected_app_client_secret
+SALESFORCE_REFRESH_TOKEN=your_refresh_token
+```
+
+**Example trigger pattern:** Create a scheduled Trigger.dev task that polls for new `Task` records where `Subject LIKE '%MAP%'` or `Description` mentions campaign commitments, then triggers `verify-map-evidence` for each. Alternatively, use Salesforce Platform Events or Outbound Messages to push updates to a webhook that triggers the task in real-time.
+
+### 5. Connect to HubSpot (read-only)
+
+**HubSpot Private App setup:**
+
+1. In HubSpot, go to **Settings > Integrations > Private Apps > Create a private app**
+2. Under Scopes, enable read-only access:
+   - `crm.objects.contacts.read`
+   - `crm.objects.deals.read`
+   - `sales-email-read` — access to logged emails
+   - `crm.objects.owners.read`
+3. Copy the access token
+
+**Recommended HubSpot objects to query:**
+
+| Object | Endpoint | Why |
+|--------|----------|-----|
+| Engagements (emails) | `GET /crm/v3/objects/emails` | Employer-originated emails — filter by `hs_email_direction = INCOMING` |
+| Engagements (notes) | `GET /crm/v3/objects/notes` | AE meeting notes and call summaries |
+| Engagements (meetings) | `GET /crm/v3/objects/meetings` | Meeting descriptions with commitment language |
+| Deals | `GET /crm/v3/objects/deals` | Stage changes and deal properties |
+
+**Environment variables for Trigger.dev:**
+
+```
+HUBSPOT_ACCESS_TOKEN=your_private_app_token
+```
+
+**Example trigger pattern:** Use a scheduled task that polls `GET /crm/v3/objects/emails?sort=-hs_timestamp&limit=20` for recent incoming emails on deals in the MAP stage. For each new email, extract the body and trigger `verify-map-evidence`. HubSpot also supports webhooks via workflow actions for real-time triggers.
 
 ## Output schema
 
@@ -145,7 +239,3 @@ The `MAPVerification` schema returned by both paths:
 | `quota_recommendation` | `count \| count_with_conditions \| do_not_count` | Final recommendation |
 | `reasoning` | `string` | Full reasoning narrative |
 | `follow_up_actions` | `string[]` | Suggested next steps |
-
-## Context
-
-Case study prototype for the Revenue Intelligence Manager (GTM Engineer) role at Rula. All company names, contacts, and account details are fictional, created to demonstrate system behavior across a range of ICP scenarios.
