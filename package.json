@@ -1,0 +1,19 @@
+{
+  "name": "map-verification",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "trigger dev"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@trigger.dev/sdk": "^4.4.1",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "^4.4.1",
+    "trigger.dev": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}
