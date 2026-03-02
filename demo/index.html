@@ -31,8 +31,10 @@
       --red-soft: #FEE2E2;
       --red-muted: #7F1D1D;
 
-      --accent: #0F766E;
-      --accent-soft: #CCFBF1;
+      --accent: #997EFF;
+      --accent-dark: #7A5CF0;
+      --accent-soft: #EDE9FE;
+      --accent-muted: #6D28D9;
 
       --font-display: "Fraunces", "Georgia", serif;
       --font-body: "Figtree", "Segoe UI", sans-serif;
@@ -422,7 +424,7 @@
     .field input:focus, .field select:focus, .field textarea:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(15,118,110,0.08);
+      box-shadow: 0 0 0 3px rgba(153,126,255,0.12);
     }
     .field textarea {
       min-height: 110px;
@@ -541,7 +543,7 @@
       gap: 0.4rem;
       transition: background 0.15s, opacity 0.15s;
     }
-    .btn-verify:hover { background: #0D6B63; }
+    .btn-verify:hover { background: var(--accent-dark); }
     .btn-verify:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .spinner {
