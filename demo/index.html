@@ -544,15 +544,15 @@
       transition: background 0.15s, opacity 0.15s;
     }
     .btn-verify:hover { background: var(--accent-dark); }
-    .btn-verify:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-verify:disabled { opacity: 0.7; cursor: not-allowed; }
 
     .spinner {
-      width: 13px;
-      height: 13px;
-      border: 2px solid rgba(255,255,255,0.3);
+      width: 14px;
+      height: 14px;
+      border: 2.5px solid rgba(255,255,255,0.35);
       border-top-color: white;
       border-radius: 50%;
-      animation: spin 0.6s linear infinite;
+      animation: spin 0.7s linear infinite;
     }
     .spinner--dark {
       border-color: var(--border);
@@ -959,7 +959,7 @@
       </div>
       <div class="form-actions">
         <button class="btn-verify" id="customVerifyBtn">Verify Evidence</button>
-        <span style="font-size:0.82rem;color:var(--text-muted)">Results may take 1–2 minutes</span>
+        <span style="font-size:0.78rem;color:var(--text-muted);margin-left:0.75rem">Results may take 1–2 minutes</span>
       </div>
       <div id="customResult"></div>
     </div>
