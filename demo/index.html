@@ -969,11 +969,18 @@
 <script>
 // ─── Access gate ────────────────────────────────
 const ACCESS_KEY = new URLSearchParams(window.location.search).get("access");
-const DEMO_UNLOCKED = ACCESS_KEY === "rula-case-study-2026";
 
-if (DEMO_UNLOCKED) {
-  document.querySelector(".page").style.display = "block";
-}
+(async function checkAccess() {
+  if (!ACCESS_KEY) return;
+  try {
+    const res = await fetch(`/api/check-access?key=${encodeURIComponent(ACCESS_KEY)}`);
+    if (res.ok) {
+      document.querySelector(".page").style.display = "block";
+    }
+  } catch (e) {
+    // access denied — page stays hidden
+  }
+})();
 
 // ─── Example evidence texts ──────────────────────
 const EXAMPLES = {

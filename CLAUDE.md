@@ -14,7 +14,7 @@ npm install
 
 # Run locally (interactive demo via Vercel dev server)
 npx vercel dev
-# Open http://localhost:3000?access=rula-case-study-2026
+# Open http://localhost:3000?access=<your ACCESS_KEY>
 
 # Run locally (Trigger.dev queue path)
 npm run dev
@@ -23,7 +23,7 @@ npm run dev
 vercel --prod --yes
 ```
 
-API key loaded from `.env` (`ANTHROPIC_API_KEY`). On Vercel, set via environment variables in the dashboard.
+Environment variables loaded from `.env` (`ANTHROPIC_API_KEY`, `ACCESS_KEY`). On Vercel, set via environment variables in the dashboard.
 
 ## Architecture
 
@@ -41,6 +41,7 @@ CRM     → trigger           → src/trigger/mapVerification.ts  → Claude →
 | `src/schemas.ts` | Zod schemas — `evidenceInputSchema` (input validation), `mapVerificationSchema` (structured output format) |
 | `src/prompt.ts` | System prompt with scoring rubric + 3 evidence samples for testing |
 | `api/verify.ts` | Vercel serverless function — access-gated, validates input, calls Claude, returns JSON |
+| `api/check-access.ts` | Lightweight access gate — validates URL param against `ACCESS_KEY` env var |
 | `src/trigger/mapVerification.ts` | Trigger.dev `schemaTask` — same logic with retry/backoff for queue-based processing |
 | `demo/index.html` | Static demo page — hardcoded result cards + interactive "Try It Yourself" form |
 | `vercel.json` | Rewrites (`demo/` as static root), `maxDuration: 60` for the API function |
@@ -55,7 +56,7 @@ CRM     → trigger           → src/trigger/mapVerification.ts  → Claude →
 - **Structured outputs over freeform**: `messages.parse()` with Zod schemas guarantees valid JSON matching `MAPVerification`. No regex or freeform text parsing.
 - **Two-axis scoring**: Evidence quality and commitment strength scored independently — a reviewer can tell whether a low score means "bad evidence" or "weak commitment".
 - **Shared core modules**: `schemas.ts` and `prompt.ts` imported by both runtime paths. Update once, both stay in sync.
-- **Access-gated demo**: URL parameter `?access=rula-case-study-2026` required. Validated client-side (page hidden via `display: none`) and server-side (403 on API). Hardcoded key in `api/verify.ts` and `demo/index.html`.
+- **Access-gated demo**: URL parameter `?access=<key>` required. Key stored in `ACCESS_KEY` env var. Validated client-side (via `/api/check-access`, page hidden until confirmed) and server-side (403 on `/api/verify`).
 
 ## Conventions
 

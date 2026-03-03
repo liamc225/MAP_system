@@ -4,7 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { evidenceInputSchema, mapVerificationSchema } from "../src/schemas.js";
 import { SYSTEM_PROMPT } from "../src/prompt.js";
 
-const ACCESS_KEY = "rula-case-study-2026";
+const ACCESS_KEY = process.env.ACCESS_KEY;
 const client = new Anthropic();
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  if (req.body?.access_key !== ACCESS_KEY) {
+  if (!ACCESS_KEY || req.body?.access_key !== ACCESS_KEY) {
     return res.status(403).json({ error: "Invalid access key" });
   }
 

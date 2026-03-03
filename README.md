@@ -107,6 +107,7 @@ Create a `.env` file:
 
 ```
 ANTHROPIC_API_KEY=your_key_here
+ACCESS_KEY=your_access_key_here
 ```
 
 ### Run the demo locally
@@ -122,7 +123,7 @@ npx vercel dev
 vercel --prod --yes
 ```
 
-Set `ANTHROPIC_API_KEY` in Vercel environment variables.
+Set `ANTHROPIC_API_KEY` and `ACCESS_KEY` in Vercel environment variables.
 
 ## Running on Trigger.dev
 
