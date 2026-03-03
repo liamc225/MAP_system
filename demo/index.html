@@ -1076,7 +1076,14 @@ async function runVerify(payload, resultContainer, btn) {
   resultContainer.innerHTML = "";
   const origHTML = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<span class="spinner"></span> Verifying&hellip;`;
+
+  let seconds = 0;
+  const updateBtn = () => {
+    btn.innerHTML = `<span class="spinner"></span> Analyzing\u2026 ${seconds}s`;
+    seconds++;
+  };
+  updateBtn();
+  const timer = setInterval(updateBtn, 1000);
 
   try {
     const output = await verifyEvidence(payload);
@@ -1084,6 +1091,7 @@ async function runVerify(payload, resultContainer, btn) {
   } catch (err) {
     resultContainer.innerHTML = `<div class="error-msg">${esc(err.message)}</div>`;
   } finally {
+    clearInterval(timer);
     btn.disabled = false;
     btn.innerHTML = origHTML;
   }
